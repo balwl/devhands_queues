@@ -1,0 +1,94 @@
+name: kafka
+
+services:
+  kafka1:
+    image: apache/kafka:3.9.1
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "19092:19092"
+      - "19093:19093"
+    environment:
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms512M"
+    volumes:
+      - ./config/kafka-raft-1.properties:/opt/kafka/config/kraft/kafka-raft.properties:ro,Z
+    command: >
+      sh -c "
+      /opt/kafka/bin/kafka-storage.sh format -t THE__QUEUE_QUEUE_QUEUE -c /opt/kafka/config/kraft/kafka-raft.properties --ignore-formatted &&
+      /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/kafka-raft.properties
+      "
+    networks:
+      - kafka-net
+
+  kafka2:
+    image: apache/kafka:3.9.1
+    hostname: kafka2
+    container_name: kafka2
+    ports:
+      - "29092:29092"
+      - "29093:29093"
+    environment:
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms512M"
+    volumes:
+      - ./config/kafka-raft-2.properties:/opt/kafka/config/kraft/kafka-raft.properties:ro,Z
+    command: >
+      sh -c "
+      /opt/kafka/bin/kafka-storage.sh format -t THE__QUEUE_QUEUE_QUEUE -c /opt/kafka/config/kraft/kafka-raft.properties --ignore-formatted &&
+      /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/kafka-raft.properties
+      "
+    networks:
+      - kafka-net
+
+  kafka3:
+    image: apache/kafka:3.9.1
+    hostname: kafka3
+    container_name: kafka3
+    ports:
+      - "39092:39092"
+      - "39093:39093"
+    environment:
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms512M"
+    volumes:
+      - ./config/kafka-raft-3.properties:/opt/kafka/config/kraft/kafka-raft.properties:ro,Z
+    command: >
+      sh -c "
+      /opt/kafka/bin/kafka-storage.sh format -t THE__QUEUE_QUEUE_QUEUE -c /opt/kafka/config/kraft/kafka-raft.properties --ignore-formatted &&
+      /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/kafka-raft.properties
+      "
+    networks:
+      - kafka-net
+
+  kafka-producers:
+    build:
+      context: .
+      dockerfile: Dockerfile.kafka-client
+    networks:
+      - kafka-net
+    volumes:
+      - ./clients_python:/clients_python:ro,Z
+    stdin_open: true
+    tty: true
+    working_dir: /clients_python
+    command: bash ./start_producers.sh
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+
+  kafka-streams-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.streams-app
+    container_name: kafka-streams-app
+    volumes:
+      - ./stream/streams.properties:/app/streams.properties:ro,Z
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka1:19092,kafka2:29092,kafka3:39092"
+    networks:
+      - kafka-net
+    depends_on:
+      - kafka-producers
+
+networks:
+  kafka-net:
+    driver: bridge

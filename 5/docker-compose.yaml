@@ -1,0 +1,64 @@
+services:
+  ru-1:
+    image: nats
+    command: -c /etc/my-server.conf --name ru-1 -p 4222 -m 8222
+    volumes:
+      - ./ru.conf:/etc/my-server.conf:Z
+    ports:
+      - 4222:4222
+      - 8222:8222
+  ru-2:
+    image: nats
+    command: -c /etc/my-server.conf --name ru-2 -p 4222 -m 8222
+    volumes:
+      - ./ru.conf:/etc/my-server.conf:Z
+    ports:
+      - 4223:4222
+  ru-3:
+    image: nats
+    command: -c /etc/my-server.conf --name ru-3 -p 4222 -m 8222
+    volumes:
+      - ./ru.conf:/etc/my-server.conf:Z
+    ports:
+      - 4224:4222
+
+  eu-1:
+    image: nats
+    command: -c /etc/my-server.conf --name eu-1 -p 4222 -m 8222
+    volumes:
+      - ./eu.conf:/etc/my-server.conf:Z
+  eu-2:
+    image: nats
+    command: -c /etc/my-server.conf --name eu-2 -p 4222 -m 8222
+    volumes:
+      - ./eu.conf:/etc/my-server.conf:Z
+  eu-3:
+    image: nats
+    command: -c /etc/my-server.conf --name eu-3 -p 4222 -m 8222
+    volumes:
+      - ./eu.conf:/etc/my-server.conf:Z
+
+  as-1:
+    image: nats
+    command: -c /etc/my-server.conf --name as-1 -p 4222 -m 8222
+    volumes:
+      - ./as.conf:/etc/my-server.conf:Z
+  as-2:
+    image: nats
+    command: -c /etc/my-server.conf --name as-2 -p 4222 -m 8222
+    volumes:
+      - ./as.conf:/etc/my-server.conf:Z
+  as-3:
+    image: nats
+    command: -c /etc/my-server.conf --name as-3 -p 4222 -m 8222
+    volumes:
+      - ./as.conf:/etc/my-server.conf:Z
+
+  cli:
+    build:
+      context: cli
+    tty: true
+    init: true
+    command: ["sleep","infinity"]
+    volumes:
+      - ./cli:/root

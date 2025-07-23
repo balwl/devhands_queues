@@ -1,0 +1,19 @@
+FROM eclipse-temurin:17-jdk
+
+WORKDIR /app
+
+RUN mkdir -p src/main/java/io/devhands
+COPY src/main/java/io/devhands/StatefulStreams.java src/main/java/io/devhands/
+
+COPY stream/streams.properties .
+
+RUN curl -O https://repo1.maven.org/maven2/org/apache/kafka/kafka-streams/3.9.1/kafka-streams-3.9.1.jar && \
+    curl -O https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.9.1/kafka-clients-3.9.1.jar && \
+    curl -O https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar && \
+    curl -O https://repo1.maven.org/maven2/org/slf4j/slf4j-simple/2.0.13/slf4j-simple-2.0.13.jar
+
+COPY --from=apache/kafka:3.9.1 /opt/kafka/libs/* ./libs/
+
+RUN javac -cp "./libs:*" src/main/java/io/devhands/StatefulStreams.java -d .
+
+CMD ["java", "-cp", "./libs/*:.", "io.devhands.StatefulStreams"]

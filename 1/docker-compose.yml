@@ -1,0 +1,23 @@
+name: nats
+
+services:
+  nats:
+    image: nats:latest
+    ports:
+      - "4222:4222"
+
+  producer:
+    build: ./producer
+    environment:
+      NATS_URL: "nats://nats:4222"
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      - nats
+
+  consumer:
+    build: ./consumer
+    environment:
+      NATS_URL: "nats://nats:4222"
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      - nats
